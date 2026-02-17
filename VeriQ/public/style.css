@@ -1,0 +1,87 @@
+/* ---------------- GLOBAL ---------------- */
+body.dark-ui {
+  background: linear-gradient(180deg,#012A4A,#001a2c);
+  color: white;
+  font-family: Inter, system-ui, sans-serif;
+  min-height: 100vh;
+}
+
+a { color: #4cc9f0; text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* ---------------- NAVBAR ---------------- */
+.glass-nav {
+  background: rgba(1,42,74,0.9);
+  backdrop-filter: blur(10px);
+  padding: 12px 0;
+}
+
+/* ---------------- HERO ---------------- */
+.hero {
+  padding: 160px 0 120px;
+  text-align: center;
+}
+
+.hero h1 {
+  font-size: 3rem;
+  font-weight: 700;
+}
+
+.hero p {
+  opacity: 0.85;
+  margin-bottom: 25px;
+}
+
+/* ---------------- CARDS ---------------- */
+.verify-card,
+.auth-card,
+.stats-card,
+.collapse-card {
+  background: #013A63;
+  padding: 32px;
+  border-radius: 20px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+}
+
+/* ---------------- FEATURES ---------------- */
+.carousel-card {
+  background: #014F86;
+  padding: 80px 20px;
+  border-radius: 20px;
+  text-align: center;
+  font-size: 1.3rem;
+}
+
+/* ---------------- RESULTS ---------------- */
+.result-card {
+  background: #014F86;
+  padding: 20px;
+  border-radius: 16px;
+}
+
+/* ---------------- AUTH ---------------- */
+.auth-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+/* ---------------- ANIMATIONS ---------------- */
+.fade-up {
+  animation: fadeUp 0.8s ease forwards;
+}
+
+.delay-1 { animation-delay: .2s }
+.delay-2 { animation-delay: .4s }
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(25px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}

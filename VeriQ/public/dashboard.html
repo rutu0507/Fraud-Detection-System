@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>VeriQ Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: Arial; background:#f4f6f9; padding:20px; }
+        h2 { color:#333; }
+        .card {
+            background:white;
+            padding:15px;
+            margin-bottom:15px;
+            border-radius:8px;
+            box-shadow:0 2px 5px rgba(0,0,0,0.1);
+        }
+        table {
+            width:100%;
+            border-collapse:collapse;
+        }
+        th, td {
+            padding:10px;
+            border-bottom:1px solid #ddd;
+        }
+        .fraud { color:red; font-weight:bold; }
+        .legit { color:green; font-weight:bold; }
+        button {
+            padding:8px 15px;
+            background:#e74c3c;
+            color:white;
+            border:none;
+            border-radius:5px;
+            cursor:pointer;
+        }
+        button:hover {
+            opacity:0.9;
+        }
+    </style>
+</head>
+<body>
+
+<h2>User Dashboard</h2>
+
+<div class="card">
+    <h3 id="profileInfo">Loading profile...</h3>
+    <button onclick="logout()">Logout</button>
+</div>
+
+<div class="card">
+    <canvas id="chart"></canvas>
+</div>
+
+<div class="card">
+    <h3>Verification History</h3>
+    <table id="historyTable">
+        <tr>
+            <th>Input</th>
+            <th>Result</th>
+            <th>Confidence</th>
+        </tr>
+    </table>
+</div>
+
+<script>
+const token = localStorage.getItem("token");
+
+// 🔐 Protect Dashboard
+if (!token) {
+    window.location.href = "/login.html";
+}
+
+// 👤 Load Profile
+function loadProfile() {
+    fetch("/api/profile", {
+        headers: {
+            "Authorization": token
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+
+        if (data.error) {
+            localStorage.removeItem("token");
+            window.location.href = "/login.html";
+            return;
+        }
+
+        document.getElementById("profileInfo").innerText =
+            "User ID: " + data.user_id + " | Role: " + data.role;
+    });
+}
+
+// 🚪 Logout
+function logout() {
+    fetch("/api/logout", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": token
+        },
+        body: JSON.stringify({})
+    })
+    .then(() => {
+        localStorage.removeItem("token");
+        window.location.href = "/login.html";
+    });
+}
+
+// 📊 Load History + Chart
+function loadHistory() {
+    fetch("/api/user/history", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": token
+        },
+        body: JSON.stringify({})
+    })
+    .then(res => res.json())
+    .then(data => {
+
+        if (data.error) {
+            localStorage.removeItem("token");
+            window.location.href = "/login.html";
+            return;
+        }
+
+        const table = document.getElementById("historyTable");
+
+        let fraudCount = 0;
+        let legitCount = 0;
+
+        data.history.forEach(item => {
+
+            const row = table.insertRow();
+            row.insertCell(0).innerText = item.input;
+
+            const resultCell = row.insertCell(1);
+            resultCell.innerText = item.result;
+
+            if(item.result === "FRAUDULENT"){
+                resultCell.className = "fraud";
+                fraudCount++;
+            } else {
+                resultCell.className = "legit";
+                legitCount++;
+            }
+
+            row.insertCell(2).innerText = item.confidence + "%";
+        });
+
+        new Chart(document.getElementById("chart"), {
+            type: "doughnut",
+            data: {
+                labels: ["Fraudulent", "Legitimate"],
+                datasets: [{
+                    data: [fraudCount, legitCount]
+                }]
+            }
+        });
+
+    });
+}
+
+// 🚀 Initialize
+loadProfile();
+loadHistory();
+
+</script>
+
+</body>
+</html>
