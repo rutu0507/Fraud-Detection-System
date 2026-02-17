@@ -8,7 +8,11 @@ SUSPICIOUS_WORDS = [
 ]
 
 SUSPICIOUS_DOMAINS = [
-    ".xyz", ".tk", ".ru", ".top", ".info"
+    ".xyz", ".tk", ".ru", ".top", ".info", ".to"
+]
+
+PIRACY_KEYWORDS = [
+    "watch", "movies", "stream", "download", "free"
 ]
 
 def contains_ip(url):
@@ -22,6 +26,7 @@ def analyze_input(url=None, text=None, filename=None):
     # ---------------- URL CHECK ----------------
     if url:
         parsed = urlparse(url)
+        domain = parsed.netloc.lower()
 
         # Length check
         if len(url) > 75:
@@ -34,10 +39,15 @@ def analyze_input(url=None, text=None, filename=None):
             reasons.append("URL contains IP address")
 
         # Suspicious domain
-        for domain in SUSPICIOUS_DOMAINS:
-            if domain in url:
+        for d in SUSPICIOUS_DOMAINS:
+            if domain.endswith(d):
                 risk_score += 20
-                reasons.append(f"Suspicious domain detected ({domain})")
+                reasons.append(f"Suspicious domain detected ({d})")
+
+        # Suspicious numbered subdomain (ww17, ww3, etc.)
+        if re.search(r"ww\d+\.", domain):
+            risk_score += 25
+            reasons.append("Suspicious numbered subdomain detected")
 
         # Too many special characters
         special_chars = len(re.findall(r"[^\w]", url))
@@ -48,8 +58,14 @@ def analyze_input(url=None, text=None, filename=None):
         # Suspicious keywords
         for word in SUSPICIOUS_WORDS:
             if word in url.lower():
-                risk_score += 8
+                risk_score += 10
                 reasons.append(f"Suspicious keyword detected: {word}")
+
+        # Piracy / risky content keywords
+        for word in PIRACY_KEYWORDS:
+            if word in url.lower():
+                risk_score += 12
+                reasons.append(f"High-risk content keyword: {word}")
 
     # ---------------- TEXT CHECK ----------------
     if text:
@@ -71,14 +87,14 @@ def analyze_input(url=None, text=None, filename=None):
             reasons.append("Executable file detected")
 
     # ---------------- FINAL DECISION ----------------
-    if risk_score >= 60:
+    if risk_score >= 70:
         status = "FRAUDULENT"
-    elif risk_score >= 30:
+    elif risk_score >= 35:
         status = "SUSPICIOUS"
     else:
         status = "LEGITIMATE"
 
-    confidence = min(95, 50 + risk_score // 2)
+    confidence = min(98, 40 + risk_score)
 
     return {
         "status": status,
